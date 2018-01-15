@@ -63,8 +63,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
         if (firebaseAuth.getCurrentUser() == null) {
-//            finish();
-//            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
         }
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if(null != user)
