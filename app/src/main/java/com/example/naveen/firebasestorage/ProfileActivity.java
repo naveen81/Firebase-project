@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -25,7 +26,9 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,11 +63,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
         if (firebaseAuth.getCurrentUser() == null) {
-            finish();
-            startActivity(new Intent(this, LoginActivity.class));
+//            finish();
+//            startActivity(new Intent(this, LoginActivity.class));
         }
         FirebaseUser user = firebaseAuth.getCurrentUser();
-
+        if(null != user)
         textUserEmail.setText("Welcome\n" + user.getEmail());
 
         buttonLogout.setOnClickListener(this);
@@ -91,7 +94,34 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             imageView.setImageBitmap(imageBitmap);
+
+
+            // Create a file n then get Object of URI
+            try {
+             filePath=   createFileFromBitmap(imageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+                filePath=null;
+                Log.e(getClass().getName(), "onActivityResult: some problem occur to getting URI   "+e.getMessage());
+            }
         }
+    }
+
+    private Uri createFileFromBitmap(Bitmap bitmap) throws IOException {
+        File f = new File(getCacheDir(), "naveen.png");
+        f.createNewFile();
+
+//Convert bitmap to byte array
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
+
+//write the bytes in file
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(bitmapdata);
+        fos.flush();
+        fos.close();
+        return Uri.fromFile(f);
     }
 
     private Uri getImageUri() {
