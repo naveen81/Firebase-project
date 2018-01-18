@@ -14,6 +14,10 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="twitter_consumer_key" translatable="false">MESdybS0qfIXdYJD3prmENDE6</string>
+    <string name="twitter_consumer_secret" translatable="false">kIWh6s7v1XRPtHlxJRDJemscRX92ajutfkeMhrQD4FwoqVlCFD</string>
+
     <string name="title_activity_login">Sign in</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

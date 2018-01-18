@@ -1,16 +1,23 @@
 package com.example.naveen.firebasestorage;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,42 +27,73 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Map;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, LocationListener {
 
 
     private static final int PICK_IMAGE_REQUEST = 123;
     private static final int CAPTURE_REQUEST_CODE = 456;
-    private Button buttonChoose, buttonUpload, buttonLogout, buttonCapture;
+    private static final String LAT_TAG = "Latitude";
+    private static final String LONG_TAG = "Longitude";
+    private Button buttonChoose, buttonUpload, buttonLogout, buttonCapture, saveLocation;
     private ImageView imageView;
     private Uri filePath;
     private StorageReference storageReference;
+    private DatabaseReference databaseReference, latValue, longValue;
 
     private FirebaseAuth firebaseAuth;
-    public String m_curentDateandTime;
+
+    TextView textViewLat,textViewLong,textUserEmail;
+    protected LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        saveLocation = findViewById(R.id.saveLocation);
         buttonLogout = findViewById(R.id.buttonLogout);
         buttonChoose = findViewById(R.id.buttonChoose);
         buttonCapture = findViewById(R.id.buttonCapture);
         buttonUpload = findViewById(R.id.buttonUpload);
-        TextView textUserEmail = findViewById(R.id.textUserEmail);
+        textUserEmail = findViewById(R.id.textUserEmail);
+        textViewLat = findViewById(R.id.textViewLat);
+        textViewLong = findViewById(R.id.textViewLong);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+
         imageView = findViewById(R.id.imageView);
 
         storageReference = FirebaseStorage.getInstance().getReference();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        latValue = databaseReference.child("Latitude");
+        longValue = databaseReference.child("Longitude");
 
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
@@ -65,12 +103,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         }
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
-        textUserEmail.setText("Welcome\n" + user.getEmail());
+        textUserEmail.setText("Welcome " + user.getEmail());
 
+        saveLocation.setOnClickListener(this);
         buttonLogout.setOnClickListener(this);
         buttonChoose.setOnClickListener(this);
         buttonCapture.setOnClickListener(this);
         buttonUpload.setOnClickListener(this);
+
     }
 
     @Override
@@ -91,21 +131,35 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             imageView.setImageBitmap(imageBitmap);
+
+
+            // Create a file n then get Object of URI
+            try {
+                filePath=   createFileFromBitmap(imageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+                filePath=null;
+                Log.e(getClass().getName(), "onActivityResult: some problem occur to getting URI   "+e.getMessage());
+            }
         }
     }
 
-    private Uri getImageUri() {
-        Uri m_imgUri = null;
-        File m_file;
-        try {
-            SimpleDateFormat m_sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            m_curentDateandTime = m_sdf.format(new Date());
-            String m_imagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + m_curentDateandTime + ".jpg";
-            m_file = new File(m_imagePath);
-            m_imgUri = Uri.fromFile(m_file);
-        } catch (Exception p_e) {
-        }
-        return m_imgUri;
+    private Uri createFileFromBitmap(Bitmap bitmap) throws IOException {
+        String name = "image:";
+        File f = new File(getCacheDir(), name + System.currentTimeMillis()+ ".jpg");
+        f.createNewFile();
+
+//Convert bitmap to byte array
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
+
+//write the bytes in file
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(bitmapdata);
+        fos.flush();
+        fos.close();
+        return Uri.fromFile(f);
     }
 
     private void uploadFile() {
@@ -176,13 +230,44 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         //button for upload
         else if (view == buttonUpload) {
             uploadFile();
-        } else if (view == buttonLogout) {
+        }
+        else if (view == buttonLogout) {
 
             firebaseAuth.signOut();
             finish();
             startActivity(new Intent(this, LoginActivity.class));
         }
+        else if (view == saveLocation){
+            saveLocation();
 
+        }
     }
 
+    private void saveLocation() {
+        String latitude = textViewLat.getText().toString();
+        String longitude = textViewLong.getText().toString();
+        latValue.setValue(latitude);
+        longValue.setValue(longitude);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        textViewLat.setText(""+location.getLatitude());
+        textViewLong.setText(""+location.getLongitude());
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        Log.d("Latitude","status");
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+        Log.d("Latitude","enable");
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+        Log.d("Latitude","disable");
+    }
 }

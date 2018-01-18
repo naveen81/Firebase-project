@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="10dp"
-    android:paddingRight="10dp"
-    android:paddingLeft="10dp"
-    android:paddingBottom="10dp"
+    android:paddingTop="16dp"
+    android:paddingRight="16dp"
+    android:paddingLeft="16dp"
+    android:paddingBottom="16dp"
     tools:context="com.example.naveen.firebasestorage.ProfileActivity">
 
     <LinearLayout
@@ -19,7 +19,6 @@
 
         <TextView
             android:text="Welcome"
-            android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/textUserEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -28,10 +27,10 @@
         <Button
             android:id="@+id/buttonLogout"
             android:text="Logout"
-            android:background="@color/colorPrimary"
-            android:textColor="#FFFFFF"
+            android:background="@color/turquoise"
+            android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="16dp"
+            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -53,20 +52,10 @@
 
         <Button
             android:id="@+id/buttonCapture"
-            android:text="Capture"
+            android:text="CLICK"
             android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        android:layout_below="@+id/linearLayout1"
-        android:layout_margin="5dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/buttonUpload"
@@ -74,6 +63,38 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Upload" />
+
+        <Button
+            android:id="@+id/saveLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Submit" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/textViewLat"
+            android:textColor="@color/turquoise"
+            android:textStyle="italic"
+            android:textSize="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/textViewLong"
+            android:textColor="@color/turquoise"
+            android:textStyle="italic"
+            android:textSize="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
 
     </LinearLayout>
@@ -85,6 +106,7 @@
         android:layout_height="match_parent"
         android:layout_margin="10dp"
         android:layout_alignParentStart="true"
+
         android:layout_below="@+id/linearLayout2" />
 
 </RelativeLayout>

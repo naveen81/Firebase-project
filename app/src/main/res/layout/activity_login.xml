@@ -4,6 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="16dp"
     tools:context="com.example.naveen.firebasestorage.LoginActivity">
 
     <LinearLayout
@@ -41,6 +45,9 @@
         <Button
             android:id="@+id/buttonSignIn"
             android:text="Sign in"
+            android:background="@color/turquoise"
+            android:textColor="@color/white"
+            android:textStyle="bold"
             android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -53,4 +60,12 @@
             android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+    <com.twitter.sdk.android.core.identity.TwitterLoginButton
+        android:id="@+id/login_button"
+        android:layout_below="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="15dp"/>
 </RelativeLayout>

@@ -45,6 +45,9 @@
         <Button
             android:id="@+id/buttonSignUp"
             android:text="Sign up"
+            android:background="@color/turquoise"
+            android:textStyle="bold"
+            android:textColor="@color/white"
             android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -57,6 +60,8 @@
             android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+
 
 
 </RelativeLayout>
