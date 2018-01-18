@@ -98,12 +98,17 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
         if (firebaseAuth.getCurrentUser() == null) {
-            finish();
             startActivity(new Intent(this, LoginActivity.class));
+            finish();
         }
         FirebaseUser user = firebaseAuth.getCurrentUser();
+<<<<<<< HEAD
 
         textUserEmail.setText("Welcome " + user.getEmail());
+=======
+        if(null != user)
+        textUserEmail.setText("Welcome\n" + user.getEmail());
+>>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
 
         saveLocation.setOnClickListener(this);
         buttonLogout.setOnClickListener(this);
@@ -135,7 +140,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
             // Create a file n then get Object of URI
             try {
+<<<<<<< HEAD
                 filePath=   createFileFromBitmap(imageBitmap);
+=======
+             filePath=   createFileFromBitmap(imageBitmap);
+>>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
             } catch (IOException e) {
                 e.printStackTrace();
                 filePath=null;
@@ -145,8 +154,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private Uri createFileFromBitmap(Bitmap bitmap) throws IOException {
+<<<<<<< HEAD
         String name = "image:";
         File f = new File(getCacheDir(), name + System.currentTimeMillis()+ ".jpg");
+=======
+        File f = new File(getCacheDir(), "naveen.png");
+>>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
         f.createNewFile();
 
 //Convert bitmap to byte array
@@ -160,6 +173,23 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         fos.flush();
         fos.close();
         return Uri.fromFile(f);
+<<<<<<< HEAD
+=======
+    }
+
+    private Uri getImageUri() {
+        Uri m_imgUri = null;
+        File m_file;
+        try {
+            SimpleDateFormat m_sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            m_curentDateandTime = m_sdf.format(new Date());
+            String m_imagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + m_curentDateandTime + ".jpg";
+            m_file = new File(m_imagePath);
+            m_imgUri = Uri.fromFile(m_file);
+        } catch (Exception p_e) {
+        }
+        return m_imgUri;
+>>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
     }
 
     private void uploadFile() {
