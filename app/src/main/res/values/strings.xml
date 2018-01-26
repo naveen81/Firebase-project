@@ -17,7 +17,11 @@
 
     <string name="twitter_consumer_key" translatable="false">MESdybS0qfIXdYJD3prmENDE6</string>
     <string name="twitter_consumer_secret" translatable="false">kIWh6s7v1XRPtHlxJRDJemscRX92ajutfkeMhrQD4FwoqVlCFD</string>
+    <string name="twitter_oauth_verifier">oauth_verifier</string>
+    <string name="twitter_callback">https://fir-storage-bcb8b.firebaseapp.com/__/auth/handler</string>
 
+    <string name="loading">Loading...</string>
+    <string name="your_message">Type your message</string>
     <string name="title_activity_login">Sign in</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

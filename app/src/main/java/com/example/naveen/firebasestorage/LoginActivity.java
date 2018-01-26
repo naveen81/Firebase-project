@@ -30,7 +30,7 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "Twitter Login";
     private EditText enterEmail;
@@ -39,21 +39,28 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TwitterLoginButton loginButton;
     private TextView textSignUp;
 
-    private ProgressDialog progressDialog;
-
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener firebaseAuthListener;
+    //private FirebaseAuth.AuthStateListener firebaseAuthListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(
+                getString(R.string.twitter_consumer_key),
+                getString(R.string.twitter_consumer_secret));
+
+        TwitterConfig twitterConfig = new  TwitterConfig.Builder(this)
+                .twitterAuthConfig(authConfig)
+                .build();
+
+        Twitter.initialize(twitterConfig);
+
+        // Inflate layout (must be done after Twitter is configured)
+        setContentView(R.layout.activity_login);
         enterEmail = findViewById(R.id.enterEmail);
         enterPassword = findViewById(R.id.enterPassword);
         buttonSignIn = findViewById(R.id.buttonSignIn);
         textSignUp = findViewById(R.id.textSignUp);
-
-        progressDialog = new ProgressDialog(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -65,15 +72,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         buttonSignIn.setOnClickListener(this);
         textSignUp.setOnClickListener(this);
 
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(
-                getString(R.string.twitter_consumer_key),
-                getString(R.string.twitter_consumer_secret));
-
-        TwitterConfig twitterConfig = new  TwitterConfig.Builder(this)
-                .twitterAuthConfig(authConfig)
-                .build();
-
-        Twitter.initialize(twitterConfig);
         loginButton = findViewById(R.id.login_button);
         loginButton.setCallback(new Callback<TwitterSession>() {
             @Override
@@ -88,11 +86,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             public void failure(TwitterException exception) {
                 // Do something on failure
                 Log.w(TAG, "twitterLogin:failure", exception);
-
+                updateUI(null);
             }
         });
 
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        updateUI(currentUser);
     }
 
     @Override
@@ -103,10 +107,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginButton.onActivityResult(requestCode, resultCode, data);
     }
 
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            finish();
+            Toast.makeText(getApplicationContext(), "Logged In", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
 
+        } else {
+            Log.d(TAG, "Not Logged in");
+
+        }
+    }
 
     private void handleTwitterSession(TwitterSession session) {
         Log.d(TAG, "handleTwitterSession:" + session);
+
+        showProgressDialog();
 
         AuthCredential credential = TwitterAuthProvider.getCredential(
                 session.getAuthToken().token,
@@ -120,19 +136,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = firebaseAuth.getCurrentUser();
+                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+                            updateUI(null);
                         }
 
+                        hideProgressDialog();
                         // ...
                     }
                 });
 
     }
-
+    //End auth_with_twitter
 
 
     private void userLogin(){
@@ -154,18 +173,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //if validations ok
         //register user
 
-        progressDialog.setMessage("Signing In...");
-        progressDialog.show();
+        showProgressDialog();
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        progressDialog.dismiss();
+                        hideProgressDialog();
 
                         if(task.isSuccessful()){
                             //start profile activity
-                            progressDialog.dismiss();
                             finish();
                             startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
                         }

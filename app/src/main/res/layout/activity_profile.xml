@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="16dp"
-    android:paddingRight="16dp"
-    android:paddingLeft="16dp"
-    android:paddingBottom="16dp"
+    android:paddingRight="10dp"
+    android:paddingLeft="10dp"
+    android:paddingBottom="6dp"
     tools:context="com.example.naveen.firebasestorage.ProfileActivity">
 
     <LinearLayout
@@ -75,38 +75,73 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_below="@+id/linearLayout1"
-        android:layout_margin="5dp"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/linearLayout1"
+        android:layout_below="@+id/linearLayout1"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/textViewLat"
-            android:textColor="@color/turquoise"
-            android:textStyle="italic"
-            android:textSize="16dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/turquoise"
+            android:textSize="16dp"
+            android:textStyle="italic" />
+
         <TextView
             android:id="@+id/textViewLong"
-            android:textColor="@color/turquoise"
-            android:textStyle="italic"
-            android:textSize="16dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/turquoise"
+            android:textSize="16dp"
+            android:textStyle="italic" />
 
-
+        <!--<TextView-->
+        <!--android:id="@+id/tvNotificationDetails"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Here notification details will be display" />-->
     </LinearLayout>
 
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp"
-        android:layout_alignParentStart="true"
+        android:layout_height="wrap_content"
 
+        android:layout_alignEnd="@+id/linearLayout1"
         android:layout_below="@+id/linearLayout2" />
+
+    <LinearLayout
+        android:id="@+id/ll_sendMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/etMessage"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="5"
+            android:inputType="textMultiLine"
+            android:maxLines="3"
+            android:scrollHorizontally="false"
+            android:hint="@string/your_message"
+            android:background="#cceaf3"
+            android:ems="10" >
+            <requestFocus />
+        </EditText>
+
+        <Button
+            android:id="@+id/buttonSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="Send"/>
+    </LinearLayout>
 
 </RelativeLayout>

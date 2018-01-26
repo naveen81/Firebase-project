@@ -9,6 +9,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -27,19 +28,35 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ThrowOnExtraProperties;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterAuthToken;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterAuthClient;
+import com.twitter.sdk.android.core.models.Tweet;
+import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Map;
+import java.io.InputStream;
+
+import twitter4j.StatusUpdate;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
+import twitter4j.conf.ConfigurationBuilder;
 
 
 public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, LocationListener {
@@ -49,15 +66,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private static final int CAPTURE_REQUEST_CODE = 456;
     private static final String LAT_TAG = "Latitude";
     private static final String LONG_TAG = "Longitude";
-    private Button buttonChoose, buttonUpload, buttonLogout, buttonCapture, saveLocation;
+    private static final String TAG = "ProfileActivity";
+    private Button buttonChoose, buttonUpload, buttonLogout, buttonCapture, saveLocation, buttonSend;
+    private EditText etMessage;
     private ImageView imageView;
     private Uri filePath;
     private StorageReference storageReference;
     private DatabaseReference databaseReference, latValue, longValue;
 
     private FirebaseAuth firebaseAuth;
+    private TwitterSession session;
 
-    TextView textViewLat,textViewLong,textUserEmail;
+    TextView textViewLat,textViewLong,textUserEmail,tvNotificationDetails;
     protected LocationManager locationManager;
 
     @Override
@@ -70,9 +90,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         buttonChoose = findViewById(R.id.buttonChoose);
         buttonCapture = findViewById(R.id.buttonCapture);
         buttonUpload = findViewById(R.id.buttonUpload);
+        buttonSend = findViewById(R.id.buttonSend);
         textUserEmail = findViewById(R.id.textUserEmail);
         textViewLat = findViewById(R.id.textViewLat);
         textViewLong = findViewById(R.id.textViewLong);
+        etMessage = findViewById(R.id.etMessage);
+        //tvNotificationDetails = findViewById(R.id.tvNotificationDetails);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -87,6 +110,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
+//        setNotificationData(getIntent().getExtras());
 
         imageView = findViewById(R.id.imageView);
 
@@ -102,21 +126,42 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             finish();
         }
         FirebaseUser user = firebaseAuth.getCurrentUser();
-<<<<<<< HEAD
 
-        textUserEmail.setText("Welcome " + user.getEmail());
-=======
-        if(null != user)
-        textUserEmail.setText("Welcome\n" + user.getEmail());
->>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
+        if(user.getEmail() != null)
+            textUserEmail.setText("Welcome\n" + user.getEmail());
+        else
+            textUserEmail.setText("Welcome\n" + user.getDisplayName());
 
         saveLocation.setOnClickListener(this);
         buttonLogout.setOnClickListener(this);
         buttonChoose.setOnClickListener(this);
         buttonCapture.setOnClickListener(this);
         buttonUpload.setOnClickListener(this);
+        buttonSend.setOnClickListener(this);
 
     }
+
+    //function for firebase notification
+
+//    private void setNotificationData(Bundle extras) {
+//        if (extras == null)
+//            return;
+//        StringBuilder text = new StringBuilder("");
+//        text.append("Message Details:");
+//        text.append("\n");
+//        text.append("\n");
+//        if (extras.containsKey("title")) {
+//            text.append("Title: ");
+//            text.append(extras.get("title"));
+//        }
+//        text.append("\n");
+//        if (extras.containsKey("message")) {
+//            text.append("Message: ");
+//            text.append(extras.get("message"));
+//        }
+//        tvNotificationDetails.setText(text);
+//    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -128,23 +173,23 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
                 imageView.setImageBitmap(bitmap);
+                filePath = createFileFromBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (requestCode == CAPTURE_REQUEST_CODE && resultCode == RESULT_OK) {
             filePath = data.getData();
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Bitmap imageBitmap = null;
+            if (extras != null) {
+                imageBitmap = (Bitmap) extras.get("data");
+            }
             imageView.setImageBitmap(imageBitmap);
 
 
             // Create a file n then get Object of URI
             try {
-<<<<<<< HEAD
                 filePath=   createFileFromBitmap(imageBitmap);
-=======
-             filePath=   createFileFromBitmap(imageBitmap);
->>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
             } catch (IOException e) {
                 e.printStackTrace();
                 filePath=null;
@@ -154,17 +199,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private Uri createFileFromBitmap(Bitmap bitmap) throws IOException {
-<<<<<<< HEAD
         String name = "image:";
         File f = new File(getCacheDir(), name + System.currentTimeMillis()+ ".jpg");
-=======
-        File f = new File(getCacheDir(), "naveen.png");
->>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
         f.createNewFile();
 
 //Convert bitmap to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
         byte[] bitmapdata = bos.toByteArray();
 
 //write the bytes in file
@@ -173,23 +214,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         fos.flush();
         fos.close();
         return Uri.fromFile(f);
-<<<<<<< HEAD
-=======
-    }
-
-    private Uri getImageUri() {
-        Uri m_imgUri = null;
-        File m_file;
-        try {
-            SimpleDateFormat m_sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            m_curentDateandTime = m_sdf.format(new Date());
-            String m_imagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + m_curentDateandTime + ".jpg";
-            m_file = new File(m_imagePath);
-            m_imgUri = Uri.fromFile(m_file);
-        } catch (Exception p_e) {
-        }
-        return m_imgUri;
->>>>>>> 4abb77a9ab6b849b4a56ce67b7187f8e619dfc61
     }
 
     private void uploadFile() {
@@ -243,7 +267,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private void onLaunchCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        if (intent.resolveActivity(getPackageManager()) != null) ;
+        if (intent.resolveActivity(getPackageManager()) != null)
         {
             startActivityForResult(intent, CAPTURE_REQUEST_CODE);
         }
@@ -269,15 +293,94 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         }
         else if (view == saveLocation){
             saveLocation();
-
         }
+        else if(view == buttonSend){
+            //new updateTwitterStatus().execute(status);
+            shareToTwitter();
+        }
+    }
+
+    private void shareToTwitter() {
+
+        final String status = etMessage.getText().toString();
+        if(status.trim().length() > 0){
+
+            Toast.makeText(getApplicationContext(), "send clicked", Toast.LENGTH_SHORT).show();
+
+            session = TwitterCore.getInstance().getSessionManager().getActiveSession();
+
+            final Intent intent = new ComposerActivity.Builder(ProfileActivity.this)
+                    .session(session)
+                    .text(status + "#asdfh")
+                    .image(filePath)
+                    .hashtags("#appTweet")
+                    .createIntent();
+            startActivity(intent);
+            Log.d(TAG, "success: posted");
+        } else {
+            Toast.makeText(getApplicationContext(), "Message is Empty!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    class updateTwitterStatus extends AsyncTask<String, String, Void>{
+
+        private ProgressDialog pDialog;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            pDialog = new ProgressDialog(getApplicationContext());
+            pDialog.setMessage("Posting to Twitter...");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+
+            String status = params[0];
+            try{
+
+                ConfigurationBuilder builder = new ConfigurationBuilder();
+                builder.setOAuthConsumerKey(String.valueOf(R.string.twitter_consumer_key));
+                builder.setOAuthConsumerSecret(String.valueOf(R.string.twitter_consumer_secret));
+
+                String access_token = session.getAuthToken().token;
+                String access_token_secret = session.getAuthToken().secret;
+                AccessToken accessToken = new AccessToken(access_token, access_token_secret);
+                Twitter twitter = new TwitterFactory(builder.build()).getInstance(accessToken);
+
+                StatusUpdate statusUpdate = new StatusUpdate(status);
+                InputStream is = getResources().openRawResource( + R.drawable.sign_in);
+                statusUpdate.setMedia("test.jpg", is);
+
+                twitter4j.Status response = twitter.updateStatus(statusUpdate);
+            } catch (TwitterException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            pDialog.dismiss();
+            Toast.makeText(getApplicationContext(), "Posted To Twitter.", Toast.LENGTH_SHORT).show();
+            etMessage.setText("");
+        }
+
     }
 
     private void saveLocation() {
         String latitude = textViewLat.getText().toString();
         String longitude = textViewLong.getText().toString();
-        latValue.setValue(latitude);
-        longValue.setValue(longitude);
+        if(!latitude.isEmpty() && !longitude.isEmpty()){
+            latValue.setValue(latitude);
+            longValue.setValue(longitude);
+        }
     }
 
     @Override

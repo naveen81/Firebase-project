@@ -16,4 +16,7 @@
     <color name="turquoise">#1abc9c</color>
     <color name="primary_dark">#E12929</color>
     <color name="accent">#FFFFFF</color>
+
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#B6B6B6</color>
 </resources>
