@@ -205,7 +205,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
 //Convert bitmap to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
         byte[] bitmapdata = bos.toByteArray();
 
 //write the bytes in file
@@ -217,7 +217,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void uploadFile() {
-
         if (filePath != null) {
 
             final ProgressDialog progressDialog = new ProgressDialog(this);
@@ -305,18 +304,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         final String status = etMessage.getText().toString();
         if(status.trim().length() > 0){
 
-            Toast.makeText(getApplicationContext(), "send clicked", Toast.LENGTH_SHORT).show();
-
             session = TwitterCore.getInstance().getSessionManager().getActiveSession();
 
             final Intent intent = new ComposerActivity.Builder(ProfileActivity.this)
                     .session(session)
-                    .text(status + "#asdfh")
+                    .text(status)
                     .image(filePath)
-                    .hashtags("#appTweet")
+                    .hashtags("#disaster")
                     .createIntent();
             startActivity(intent);
-            Log.d(TAG, "success: posted");
+
+            new MyResultReceiver();
+            Log.d(TAG, "success: Tweet shared");
         } else {
             Toast.makeText(getApplicationContext(), "Message is Empty!", Toast.LENGTH_SHORT).show();
         }

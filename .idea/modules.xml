@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://C:\Users\Naveen\AndroidStudioProjects\FirebaseStorage\Firebase-project.iml" filepath="C:\Users\Naveen\AndroidStudioProjects\FirebaseStorage\Firebase-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Firebase-project.iml" filepath="$PROJECT_DIR$/Firebase-project.iml" />
       <module fileurl="file://$PROJECT_DIR$/FirebaseStorage.iml" filepath="$PROJECT_DIR$/FirebaseStorage.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
